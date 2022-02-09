@@ -18,7 +18,13 @@ public class PipelineApplication
             _serviceProvider
                 .GetServices(typeof(IProducer<>))
                 .Select(_ => (IRunner) _serviceProvider.GetRequiredService(typeof(IProducer<>)))
-                .Select(_ => _.Run()));
+                .Select(_ =>
+                {
+                    using (_serviceProvider.CreateScope())
+                    {
+                        return _.Run();   
+                    }
+                }));
 
         var consumerTasks = Task.WhenAll(
             _serviceProvider
