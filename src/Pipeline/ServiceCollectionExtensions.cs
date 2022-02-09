@@ -16,7 +16,7 @@ namespace Pipeline
 
             // Add Consumers
             foreach (var cfg in configuration.Consumers)
-                services.AddTransient( MakeGenericConsumer(cfg.ChannelType), cfg.ConsumerType);
+                services.AddTransient(MakeGenericConsumer(cfg.ChannelType), cfg.ConsumerType);
             
             // Add Producers
             foreach (var cfg in configuration.Producers)
