@@ -3,7 +3,7 @@ using PipelineRewrite.Interfaces;
 
 namespace PipelineRewrite.Runners;
 
-public class ConsumerRunner<T> : IRunner
+internal class ConsumerRunner<T> : IRunner
 {
     private readonly Channel<T> _channel;
     private readonly IConsumer<T> _consumer;

@@ -15,13 +15,9 @@ internal class ChannelOrchestrator<T> : IRunner
         _tasks = new();
     }
 
-    public IChannelWriter<T> CreateChannelWriter()
+    public void Subscribe(Task task)
     {
-        var writer = new CompletableChannelWriter<T>(_channel);
-        
-        _tasks.Add(writer.Completion);
-        
-        return writer;
+        _tasks.Add(task);
     }
     
     public async Task Run()
@@ -29,6 +25,7 @@ internal class ChannelOrchestrator<T> : IRunner
         while (_tasks.Any(_ => !_.IsCompleted))
             await Task.WhenAll(_tasks);
 
+        Console.WriteLine($"Closing {typeof(T)}");
         _channel.Writer.Complete();
     }
 }

@@ -10,8 +10,10 @@ namespace PipelineRewrite;
 public class PipelineApplicationBuilder
 {
     private readonly IServiceCollection _services = new ServiceCollection()
+        .AddScoped(typeof(ChannelOrchestrator<>))
         .AddTransient(typeof(ConsumerRunner<>))
-        .AddTransient(typeof(ProducerRunner<>));
+        .AddTransient(typeof(ProducerRunner<>))
+        .AddTransient(typeof(IChannelWriter<>), typeof(CompletableChannelWriter<>));
 
     public PipelineApplicationBuilder Configure(Action<IServiceCollection> act)
     {
@@ -22,7 +24,7 @@ public class PipelineApplicationBuilder
     public PipelineApplicationBuilder AddChannel<T>(int capacity, int parallelism)
     {
         _services
-            .AddSingleton(_ => new ChannelRegistration<T>(capacity, parallelism))
+            .AddSingleton(_ => new ChannelRegistration(capacity, parallelism, typeof(T)))
             .AddSingleton(_ => Channel.CreateBounded<T>(capacity));
             
         return this;
@@ -34,10 +36,10 @@ public class PipelineApplicationBuilder
             .Scan(scan => scan
                 .FromAssemblies(assembly)
                 .AddClasses(classes => classes.AssignableTo(typeof(IProducer<>)))
-                .As(typeof(IProducer<>))
+                .AsImplementedInterfaces()
                 .WithTransientLifetime()
                 .AddClasses(classes => classes.AssignableTo(typeof(IConsumer<>)))
-                .As(typeof(IConsumer<>))
+                .AsImplementedInterfaces()
                 .WithTransientLifetime());
 
         return this;
@@ -45,6 +47,6 @@ public class PipelineApplicationBuilder
 
     public PipelineApplication Build()
     {
-        return new PipelineApplication(_services.BuildServiceProvider());
+        return new PipelineApplication(_services);
     }
 }

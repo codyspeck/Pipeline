@@ -8,13 +8,13 @@ internal class CompletableChannelWriter<T> : IChannelWriter<T>, IDisposable
     private readonly Channel<T> _channel;
     private readonly TaskCompletionSource _completion;
 
-    public CompletableChannelWriter(Channel<T> channel)
+    public CompletableChannelWriter(Channel<T> channel, ChannelOrchestrator<T> orchestrator)
     {
         _channel = channel;
         _completion = new();
+        Console.WriteLine($"Subscribing {typeof(T)}");
+        orchestrator.Subscribe(_completion.Task);
     }
-
-    public Task Completion => _completion.Task;
 
     public async Task Write(T item)
     {
@@ -23,6 +23,7 @@ internal class CompletableChannelWriter<T> : IChannelWriter<T>, IDisposable
 
     public void Dispose()
     {
+        Console.WriteLine($"Disposing {typeof(T)}");
         _completion.SetResult();
     }
 }
